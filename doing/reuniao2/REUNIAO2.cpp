@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//fazer minimum spanning tree, depois calcular o ponto medio.
+
 int llist[100][101][2];
+
 
 void push(int a, int b, int c){
   llist[a][ llist[a][100][0] ][0] = b;
