@@ -3,9 +3,39 @@
 
 #define MAX 250
 
-int mapa[MAX][MAX];
+#define INF -1
 
+typedef struct {
+  int id;
+  int weight;
+} city;
+
+city mapa[MAX][MAX+1];
+int visited[MAX];
 int distancia[MAX];
+
+void print_graph(int size){
+  for(int i=0; i< size; i++){
+    for (int j=0; j< mapa[i][MAX].weight; j++)
+      printf("(%d:%d),", mapa[i][j].id,mapa[i][j].weight );
+    printf("\n");
+  }
+}
+
+void print_distances(int size){
+  for(int i=0; i<size; i++)
+    printf("%d..",distancia[i] );
+  printf("\n");
+}
+
+void push(int a, int b, int c){
+  mapa[a][ mapa[a][MAX].weight ].weight= c;
+  mapa[a][ mapa[a][MAX].weight ].id= b;
+  mapa[a][MAX].weight++;
+  mapa[b][ mapa[b][MAX].weight ].weight= c;
+  mapa[b][ mapa[b][MAX].weight ].id= a;
+  mapa[b][MAX].weight++;
+}
 
 int sum(int a, int b){
   return (a+b)*( a!=INF && b!=INF) + INF*(a == INF || b == INF);
@@ -15,79 +45,84 @@ int bt(int a, int b){
   return (a == INF) || (a>b && b!=INF) ;
 }
 
-/*int find(int key){
-  for (int i=0; i<distancia[key][MAX][0]; i++)
-    if ( key = distancia[key][i][0])
-      return i;
-}*/
-
 void relax(int a, int b){
-  if ( bt( distances[b], sum(distances[a],mapa[a][b]) ) ){
-    distances[b]= sum(distances[a],mapa[a][b]);
+  int k= mapa[a][b].weight;
+  int j= mapa[a][b].id;
+  if ( bt( distancia[a], sum(distancia[j],k) ) ){
+    distancia[a]= sum(distancia[j],k);
   }
 }
 
-void bf(int N){
-  for (int i=0; i< N; i++){
-    for (int j=0; j<N; j++){
-      relax(i, j)
+int minimum_distance( int N ){
+  int min=INF;
+  int val;
+  for(int i; i<N; i++)
+    if ( bt(min,distancia[i]) ){
+      min= distancia[i];
+      val=i;
     }
-  }
+  return val;
+}
+
+void ds(int N){
+  int a;
+  for(int i=0; i<N; i++){
+    a= minimum_distance(N);
+    printf("%d", a);
+    visited[a]= 1;
+    for(int j=0; j<mapa[a][MAX].weight; a++)
+      relax(a, j);
+  }  
+}
+
+int find(int current){
+  for (int i=0; i< mapa[current][MAX].weight; i++)
+    if ( mapa[current][i].id == current+1 )
+      return i;
+  return -1;
 }
 
 void fix_graph(int i, int C, int max){
-  if ( i == C-1 )
+  city temp;
+  if ( i == C-1 ){
     distancia[i]=0;
+    mapa[i][MAX].weight=0;
+  }
   else{
-    distancia[i]= mapa[i][j]+distancia[i+1];
-    for(int j=0; j++; j< max)
-      mapa[i][j]= INF;
-    mapa[i][i+1]= mapa[i+1][i];
+    temp= mapa[i][find( i )];
+    distancia[i]= sum(temp.weight,distancia[i+1]);
+    mapa[i][MAX].weight=1;
+    mapa[i][0]= temp;
   }
 }
 
-/*
-void fix_graph(int i, int C){
-  if( C-1 == i )
-    distancia[i]=0;
-  else
-    distancia[i]= mapa[i][ find(i+1) ][1] + distancia[i+1];
-}
-
-void push(int a, int b, int c, int C){
-  rota[a][rota[a][MAX][0]][0] = b;
-  rota[a][rota[a][MAX][0]][1] = c;
-  rota[a][MAX][0]++; 
-  rota[b][rota[b][MAX][0]][0] = a;
-  rota[b][rota[b][MAX][0]][1] = c;
-  rota[b][MAX][0]++;
-}*/
-
 int main(){
-  int N, M, C, K, i,a ,b, c;
+  int N, M, C, K, i,a ,b, c,j;  
+    printf("lol");
   scanf("%d %d %d %d", &N, &M, &C, &K);
   while ( N != 0){
-    /*for(i=0; i<N; i++){
-      mapa[i][MAX][0]= 0;
+    
+    for(i=0; i<N;i++){
+      distancia[i]= INF;
+      visited[i]=0;
+      mapa[i][MAX].weight= 0;
     }
+
     for(i=0; i<M; i++){
       scanf("%d %d %d", &a, &b, &c);
-      push(a, b, c, C);
-    }*/
-    for(i=0; i<N;i++)
-      for(j=0; j<N; j++){
-        mapa[i][j]= INF;
-        mapa[j][i]= INF;
-      }
-    for(i=0; i<M; i++){
-      scanf("%d %d %d", &a, &b, &c);
-      mapa[a][b]=c;
-      mapa[b][a]=c;
+      push(a,b,c);  
     }
-    for(i=0; i<C; i++){
-      fix_graph(C-i-1,C);
-    }
-    bf(N);
+    for(i=0; i<C; i++)
+      fix_graph(C-i-1,C, N);
+
+    //print_graph(N);
+    //print_distances(N);
+
+    ds(N);
+
+    //print_distances(N);
+
+    printf("%d\n",distancia[K] );
     scanf("%d %d %d %d", &N, &M, &C, &K);
   }
 }
